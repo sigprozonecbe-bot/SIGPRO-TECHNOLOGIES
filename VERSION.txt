@@ -1,0 +1,3 @@
+SigPro Technologies - Firebase Connected Fix
+This build fixes the JavaScript error that prevented the Login button from responding.
+Firebase configuration for project: sigpro-technologies

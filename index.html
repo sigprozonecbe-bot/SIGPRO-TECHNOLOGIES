@@ -212,23 +212,83 @@ function renderDashboard(){
   const active=scholars().filter(s=>!s.completed);$("dashActive").innerHTML=active.length?active.slice(0,7).map(s=>{const t=totals(s),pct=t.contract?Math.round(t.paid/t.contract*100):0;return `<div class="service"><div class="service-head"><div><b>${esc(s.name)}</b><div class="meta">${esc(s.phone)} • ${serviceCount(s)} services</div></div><button class="btn secondary" onclick="openScholar('${s.id}')">Open</button></div><div class="small">Received ${money(t.paid)} / ${money(t.contract)} • ${pct}%</div></div>`}).join(""):'<div class="empty">No active scholars.</div>';
   const cats={"Research Work":0,"Journal Publication":0,"Journal Author Position":0,"Patent Author Position":0,"Other":0};scholars().forEach(s=>allMilestones(s).forEach(m=>cats[m.category]=(cats[m.category]||0)+Number(m.amount||0)));$("catTotals").innerHTML=Object.entries(cats).map(([k,v])=>`<span class="pill">${esc(k)}: ${money(v)}</span>`).join("");
 }
-function alertHTML(x){const over=x.due&&x.due<today();return `<div class="alert ${over?"over":""}"><div class="service-head"><div><b>${esc(x.scholar.name)}</b><div class="small">${esc(x.category)} • ${esc(x.service)} • ${esc(x.name)}</div></div><span class="badge ${over?"overdue":"pending"}">${over?"OVERDUE":"PENDING"}</span></div><div><b>${money(x.amount)}</b>${x.due?" • Due "+esc(x.due):""}</div><div class="alert-actions">${x.scholar.phone?`<a class="btn phone" style="text-decoration:none" href="tel:${esc(x.scholar.phone)}">📞 ${esc(x.scholar.phone)}</a>`:""}<button class="btn secondary" onclick="openScholar('${x.scholar.id}')">Open</button></div></div>`;}
-
-function renderScholars(){
-  const q=norm($("search").value),f=$("filter").value;
-  const rows=scholars().filter(s=>{const blob=norm([s.name,s.phone,s.code,s.institution,s.email,s.guide].join(" "));return(!q||blob.includes(q))&&(f==="ALL"||(f==="ACTIVE"&&!s.completed)||(f==="COMPLETED"&&s.completed));});
-  $("scholarBody").innerHTML=rows.length?rows.map(s=>{const t=totals(s);return `<tr><td><b>${esc(s.name)}</b><br><span class="small">${esc(s.code||"No ID")}</span></td><td><a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></td><td>${esc(s.institution||"-")}</td><td>${serviceCount(s)}</td><td>${money(t.contract)}</td><td>${money(t.paid)}</td><td>${money(t.due)}</td><td><span class="badge ${s.completed?"paid":"active"}">${s.completed?"COMPLETED":"ACTIVE"}</span></td><td>${esc(s.updatedBy||"-")}</td><td><button class="btn primary" onclick="openScholar('${s.id}')">Open</button></td></tr>`}).join(""):'<tr><td colspan="10" class="empty">No scholars found.</td></tr>';
+function alertHTML(x){
+  var overdue=x.due&&x.due<today();
+  var phone=x.scholar.phone ? '<a class="btn phone" style="text-decoration:none" href="tel:'+esc(x.scholar.phone)+'">📞 '+esc(x.scholar.phone)+'</a>' : '';
+  return '<div class="alert '+(overdue?'over':'')+'">'
+    +'<div class="service-head"><div><b>'+esc(x.scholar.name)+'</b><div class="small">'+esc(x.category)+' • '+esc(x.service)+' • '+esc(x.name)+'</div></div>'
+    +'<span class="badge '+(overdue?'overdue':'pending')+'">'+(overdue?'OVERDUE':'PENDING')+'</span></div>'
+    +'<div><b>'+money(x.amount)+'</b>'+(x.due?' • Due '+esc(x.due):'')+'</div>'
+    +'<div class="alert-actions">'+phone+'<button class="btn secondary" onclick="openScholar(\''+x.scholar.id+'\')">Open</button></div>'
+    +'</div>';
 }
-function renderAll(){refreshStats();renderDashboard();renderScholars();if(["owner","boss"].includes(role))renderAdmin();}
 
-async function write(path,value,action,record,details){
-  const patch={};patch[path]=value;
-  const act=push(ref(dbase,"company/activity")).key;
-  patch["company/activity/"+act]={uid:user.uid,user:currentUserName(),action,record,details:String(details||""),time:Date.now()};
-  await update(ref(dbase),patch);
+function researchHTML(s){
+  var blocks=[];
+  for(var i=1;i<=3;i++) blocks.push(serviceBlock(s,'paper',i,'Paper '+i,['Proposal Work Initiation','Paper Write-up Advance','Paper Final Amount']));
+  for(var j=1;j<=3;j++) blocks.push(serviceBlock(s,'simulation',j,'Simulation '+j,['Simulation Initiation','Simulation Advance','Simulation Final Amount']));
+  blocks.push(serviceBlock(s,'synopsis',0,'Synopsis',['Initial Amount','Final Amount']));
+  blocks.push(serviceBlock(s,'thesis',0,'Thesis',['Initial Amount','Final Amount']));
+  (s.research?.custom||[]).forEach(function(c){
+    var remove=researchAreaAllowed()?'<button class="btn danger" onclick="removeCustom(\''+s.id+'\',\''+c.id+'\')">Remove</button>':'';
+    blocks.push('<div class="service"><div class="service-head"><div class="service-title">'+esc(c.label)+'</div>'+remove+'</div><div class="rows">'+(c.milestones||[]).map(function(m){return milestoneRow(s,m,researchAreaAllowed(),'research')}).join('')+'</div></div>');
+  });
+  var add=researchAreaAllowed()?'<button class="btn primary" onclick="addCustom(\''+s.id+'\')">+ Custom R&D</button>':'';
+  return '<div class="service-head"><div><h3>Research Work / R&D</h3><div class="sub">Three papers, three simulations, synopsis and thesis.</div></div>'+add+'</div>'+blocks.join('');
 }
-function saveScholarObject(s,details="Updated scholar"){
-  return write("company/scholars/"+s.id,s,"UPDATE",s.name,details);
+
+function journalHTML(s){
+  var edit=journalAllowed(), pay=paymentAreaAllowed();
+  var add=edit?'<button class="btn primary" onclick="addJournal(\''+s.id+'\')">+ Add Journal</button>':'';
+  var items=(s.journalPublications||[]).map(function(x){
+    var rm=edit?'<button class="btn danger" onclick="removeItem(\''+s.id+'\',\'journalPublications\',\''+x.id+'\')">Remove</button>':'';
+    var dis=(edit||pay)?'':'disabled';
+    return '<div class="service"><div class="service-head"><div><div class="service-title">'+esc(x.type)+' • '+esc(x.journal)+'</div><div class="meta">Manuscript: '+esc(x.manuscript||'-')+'</div></div>'+rm+'</div>'
+      +'<div class="form"><div><label>Total Cost (₹)</label><input type="number" '+dis+' value="'+Number(x.total||0)+'" onchange="editObject(\''+s.id+'\',\'journalPublications\',\''+x.id+'\',\'total\',this.value)"></div>'
+      +'<div><label>Publication Status</label><select '+dis+' onchange="editObject(\''+s.id+'\',\'journalPublications\',\''+x.id+'\',\'status\',this.value)"><option '+(x.status==='In Progress'?'selected':'')+'>In Progress</option><option '+(x.status==='Published'?'selected':'')+'>Published</option><option '+(x.status==='Cancelled'?'selected':'')+'>Cancelled</option></select></div></div>'
+      +'<div class="rows">'+(x.milestones||[]).map(function(m){return milestoneRow(s,m,edit,'journal')}).join('')+'</div></div>';
+  }).join('');
+  return '<div class="service-head"><div><h3>Journal Publication</h3><div class="sub">Scopus, SCIE and Random Login Paper.</div></div>'+add+'</div>'+(items||'<div class="empty">No journal publications.</div>');
+}
+
+function journalAuthorsHTML(s){
+  var edit=journalAllowed();
+  var add=edit?'<button class="btn primary" onclick="addJournalAuthor(\''+s.id+'\')">+ Add Position</button>':'';
+  var items=(s.journalAuthors||[]).map(function(x){
+    var rm=edit?'<button class="btn danger" onclick="removeItem(\''+s.id+'\',\'journalAuthors\',\''+x.id+'\')">Remove</button>':'';
+    return '<div class="service"><div class="service-head"><div class="service-title">Position '+x.position+' • '+esc(x.journal)+'</div>'+rm+'</div><div class="rows">'+(x.milestones||[]).map(function(m){return milestoneRow(s,m,edit,'journal')}).join('')+'</div></div>';
+  }).join('');
+  return '<div class="service-head"><div><h3>Journal Author Positions</h3><div class="sub">Maximum 7 positions. Position 1 = Write-up + Login + Acceptance; Positions 2–7 = Login + Acceptance.</div></div>'+add+'</div>'+(items||'<div class="empty">No journal author positions.</div>');
+}
+
+function patentHTML(s){
+  var edit=patentAllowed();
+  var add=edit?'<button class="btn primary" onclick="addPatent(\''+s.id+'\')">+ Add Position</button>':'';
+  var items=(s.patentAuthors||[]).map(function(x){
+    var rm=edit?'<button class="btn danger" onclick="removeItem(\''+s.id+'\',\'patentAuthors\',\''+x.id+'\')">Remove</button>':'';
+    var dis=(edit||paymentAreaAllowed())?'':'disabled';
+    return '<div class="service"><div class="service-head"><div class="service-title">Position '+x.position+' • '+esc(x.patent)+'</div>'+rm+'</div><div class="form">'
+      +'<div><label>Cost (₹)</label><input type="number" '+dis+' value="'+Number(x.amount||0)+'" onchange="editObject(\''+s.id+'\',\'patentAuthors\',\''+x.id+'\',\'amount\',this.value)"></div>'
+      +'<div><label>Status</label><select '+dis+' onchange="editObject(\''+s.id+'\',\'patentAuthors\',\''+x.id+'\',\'status\',this.value)"><option '+(x.status==='Pending'?'selected':'')+'>Pending</option><option '+(x.status==='Paid'?'selected':'')+'>Paid</option><option '+(x.status==='Overdue'?'selected':'')+'>Overdue</option></select></div>'
+      +'<div><label>Due Date</label><input type="date" '+dis+' value="'+esc(x.due||'')+'" onchange="editObject(\''+s.id+'\',\'patentAuthors\',\''+x.id+'\',\'due\',this.value)"></div>'
+      +'</div></div>';
+  }).join('');
+  return '<div class="service-head"><div><h3>Patent Author Positions</h3><div class="sub">Maximum 8 positions, each with separate cost/status.</div></div>'+add+'</div>'+(items||'<div class="empty">No patent positions.</div>');
+}
+
+function otherHTML(s){
+  var edit=['owner','boss','accounts'].includes(role);var add=edit?'<button class="btn primary" onclick="addOther(\''+s.id+'\')">+ Add</button>':'';
+  var items=(s.other||[]).map(function(x){
+    var rm=edit?'<button class="btn danger" onclick="removeItem(\''+s.id+'\',\'other\',\''+x.id+'\')">Remove</button>':'';
+    return '<div class="service"><div class="service-head"><div class="service-title">'+esc(x.service)+'</div>'+rm+'</div><div class="form"><div><label>Amount</label><input type="number" '+(edit?'':'disabled')+' value="'+Number(x.amount||0)+'" onchange="editObject(\''+s.id+'\',\'other\',\''+x.id+'\',\'amount\',this.value)"></div>'
+      +'<div><label>Status</label><select '+(edit?'':'disabled')+' onchange="editObject(\''+s.id+'\',\'other\',\''+x.id+'\',\'status\',this.value)"><option '+(x.status==='Pending'?'selected':'')+'>Pending</option><option '+(x.status==='Paid'?'selected':'')+'>Paid</option><option '+(x.status==='Overdue'?'selected':'')+'>Overdue</option></select></div></div></div>';
+  }).join('');
+  return '<div class="service-head"><div><h3>Other / Miscellaneous</h3></div>'+add+'</div>'+(items||'<div class="empty">No other payments.</div>');
+}
+
+function profileHTML(s){
+  var edit=['owner','boss','accounts'].includes(role);var dis=edit?'':'disabled';
+  return '<div class="form"><div><label>Scholar Name</label><input id="pName" '+dis+' value="'+esc(s.name)+'"></div><div><label>Customer ID</label><input id="pCode" '+dis+' value="'+esc(s.code||'')+'"></div><div><label>Phone</label><input id="pPhone" '+dis+' value="'+esc(s.phone)+'"></div><div><label>Email</label><input id="pEmail" '+dis+' value="'+esc(s.email||'')+'"></div><div class="full"><label>Institution</label><input id="pInst" '+dis+' value="'+esc(s.institution||'')+'"></div><div class="full"><label>Guide</label><input id="pGuide" '+dis+' value="'+esc(s.guide||'')+'"></div><div class="full"><label>Notes</label><textarea id="pNotes" '+dis+'>'+esc(s.notes||'')+'</textarea></div></div><div class="actions">'+(edit?'<button class="btn primary" onclick="saveProfile(\''+s.id+'\')">Save Profile</button>':'')+'<button class="btn '+(s.completed?'secondary':'success')+'" onclick="toggleComplete(\''+s.id+'\')">'+(s.completed?'Reopen':'Mark Work Complete')+'</button></div>';
 }
 
 window.addScholar=async()=>{
@@ -247,66 +307,43 @@ function patentAllowed(){return canEdit("patent")||["owner","boss"].includes(rol
 
 function milestone(name){return{id:uid("m"),name,amount:0,due:"",status:"Pending",paidDate:"",notes:""}}
 function serviceBlock(s,type,index,label,names){
- const arr=(type==="paper"||type==="simulation")?(s.research?.[type+"s"]||[]):null;
- const obj=arr?arr[index-1]:s.research?.[type];
- if(!obj)return `<div class="service"><div class="service-head"><div><b>${label}</b><div class="small">Not created</div></div>${researchAreaAllowed()?`<button class="btn secondary" onclick="createResearch('${s.id}','${type}',${index})">Create</button>`:""}</div></div>`;
- const controls=researchAreaAllowed();
- return `<div class="service"><div class="service-head"><div><div class="service-title">${esc(label)}</div><div class="meta">R&D milestones</div></div>${controls?`<button class="btn danger" onclick="removeResearch('${s.id}','${type}',${index})">Remove</button>`:""}</div><div class="rows">${(obj.milestones||[]).map(m=>milestoneRow(s,m,researchAreaAllowed(),"research")).join("")}</div></div>`;
+  var arr=(type==='paper'||type==='simulation')?(s.research?.[type+'s']||[]):null;
+  var obj=arr?arr[index-1]:s.research?.[type];
+  if(!obj){
+    var create=researchAreaAllowed()?'<button class="btn secondary" onclick="createResearch(\''+s.id+'\',\''+type+'\','+index+')">Create</button>':'';
+    return '<div class="service"><div class="service-head"><div><b>'+esc(label)+'</b><div class="small">Not created</div></div>'+create+'</div></div>';
+  }
+  var remove=researchAreaAllowed()?'<button class="btn danger" onclick="removeResearch(\''+s.id+'\',\''+type+'\','+index+')">Remove</button>':'';
+  return '<div class="service"><div class="service-head"><div><div class="service-title">'+esc(label)+'</div><div class="meta">R&D milestones</div></div>'+remove+'</div><div class="rows">'+(obj.milestones||[]).map(function(m){return milestoneRow(s,m,researchAreaAllowed(),'research')}).join('')+'</div></div>';
 }
+
 function milestoneRow(s,m,canEditRow,area){
- const locked=!canEditRow&&!paymentAreaAllowed(); const editable=canEditRow||paymentAreaAllowed();
- return `<div class="mrow"><div class="nm">${esc(m.name)}<div class="small">Due ${esc(m.due||"-")} • ${esc(m.notes||"")}</div></div>
- <input type="number" ${editable?"":"disabled"} value="${Number(m.amount||0)}" onchange="editMilestone('${s.id}','${m.id}','amount',this.value)">
- <select ${editable?"":"disabled"} onchange="editMilestone('${s.id}','${m.id}','status',this.value)"><option ${m.status==="Pending"?"selected":""}>Pending</option><option ${m.status==="Paid"?"selected":""}>Paid</option><option ${m.status==="Overdue"?"selected":""}>Overdue</option><option ${m.status==="Scheduled"?"selected":""}>Scheduled</option></select>
- <input type="date" ${editable?"":"disabled"} value="${esc(m.due||"")}" onchange="editMilestone('${s.id}','${m.id}','due',this.value)">
- <button class="btn secondary" ${editable?"":"disabled"} onclick="editNote('${s.id}','${m.id}')">Note</button></div>`;
+  var editable=!!canEditRow||paymentAreaAllowed();
+  var dis=editable?'':'disabled';
+  return '<div class="mrow"><div class="nm">'+esc(m.name)+'<div class="small">Due '+esc(m.due||'-')+' • '+esc(m.notes||'')+'</div></div>'
+    +'<input type="number" '+dis+' value="'+Number(m.amount||0)+'" onchange="editMilestone(\''+s.id+'\',\''+m.id+'\',\'amount\',this.value)">'
+    +'<select '+dis+' onchange="editMilestone(\''+s.id+'\',\''+m.id+'\',\'status\',this.value)"><option '+(m.status==='Pending'?'selected':'')+'>Pending</option><option '+(m.status==='Paid'?'selected':'')+'>Paid</option><option '+(m.status==='Overdue'?'selected':'')+'>Overdue</option><option '+(m.status==='Scheduled'?'selected':'')+'>Scheduled</option></select>'
+    +'<input type="date" '+dis+' value="'+esc(m.due||'')+'" onchange="editMilestone(\''+s.id+'\',\''+m.id+'\',\'due\',this.value)">'
+    +'<button class="btn secondary" '+dis+' onclick="editNote(\''+s.id+'\',\''+m.id+'\')">Note</button></div>';
 }
-function researchHTML(s){
- let x=[];for(let i=1;i<=3;i++)x.push(serviceBlock(s,"paper",i,"Paper "+i,["Proposal Work Initiation","Paper Write-up Advance","Paper Final Amount"]));
- for(let i=1;i<=3;i++)x.push(serviceBlock(s,"simulation",i,"Simulation "+i,["Simulation Initiation","Simulation Advance","Simulation Final Amount"]));
- x.push(serviceBlock(s,"synopsis",0,"Synopsis",["Initial Amount","Final Amount"]));x.push(serviceBlock(s,"thesis",0,"Thesis",["Initial Amount","Final Amount"]));
- (s.research?.custom||[]).forEach(c=>x.push(`<div class="service"><div class="service-head"><div class="service-title">${esc(c.label)}</div>${researchAreaAllowed()?`<button class="btn danger" onclick="removeCustom('${s.id}','${c.id}')">Remove</button>`:""}</div><div class="rows">${(c.milestones||[]).map(m=>milestoneRow(s,m,researchAreaAllowed(),"research")).join("")}</div></div>`));
- return `<div class="service-head"><div><h3>Research Work / R&D</h3><div class="sub">Three papers, three simulations, synopsis and thesis.</div></div>${researchAreaAllowed()?`<button class="btn primary" onclick="addCustom('${s.id}')">+ Custom R&D</button>`:""}</div>${x.join("")}`;
-}
-window.createResearch=async(id,type,index)=>{
- const s=scholar(id),names=type==="paper"?["Proposal Work Initiation","Paper Write-up Advance","Paper Final Amount"]:type==="simulation"?["Simulation Initiation","Simulation Advance","Simulation Final Amount"]:["Initial Amount","Final Amount"];
- const obj={id:uid("svc"),label:(type==="paper"?"Paper ":"Simulation ")+index,milestones:names.map(milestone)};
- const ns=JSON.parse(JSON.stringify(s));
- if(type==="paper"||type==="simulation"){const key=type+"s";ns.research[key]=ns.research[key]||[];while(ns.research[key].length<index)ns.research[key].push(null);ns.research[key][index-1]=obj;}else ns.research[type]=obj;
- ns.updatedBy=currentUserName();await saveScholarObject(ns,"Created "+obj.label);openScholar(id);
+
+window.createResearch=async function(id,type,index){
+  if(!researchAreaAllowed())return;
+  var s=scholar(id),names=type==='paper'?['Proposal Work Initiation','Paper Write-up Advance','Paper Final Amount']:type==='simulation'?['Simulation Initiation','Simulation Advance','Simulation Final Amount']:['Initial Amount','Final Amount'];
+  var obj={id:uid('svc'),label:(type==='paper'?'Paper ':'Simulation ')+index,milestones:names.map(milestone)};
+  var ns=JSON.parse(JSON.stringify(s));
+  if(type==='paper'||type==='simulation'){var key=type+'s';ns.research[key]=ns.research[key]||[];while(ns.research[key].length<index)ns.research[key].push(null);ns.research[key][index-1]=obj;}else ns.research[type]=obj;
+  ns.updatedBy=currentUserName();await saveScholarObject(ns,'Created '+obj.label);openScholar(id);
 };
-window.removeResearch=async(id,type,index)=>{if(!researchAreaAllowed())return;const ns=JSON.parse(JSON.stringify(scholar(id)));if(type==="paper"||type==="simulation")ns.research[type+"s"][index-1]=null;else ns.research[type]={};ns.updatedBy=currentUserName();await saveScholarObject(ns,"Removed "+type);openScholar(id);};
-window.addCustom=async(id)=>{const label=prompt("Custom R&D service name:");if(!label)return;const ns=JSON.parse(JSON.stringify(scholar(id)));ns.research.custom=ns.research.custom||[];ns.research.custom.push({id:uid("svc"),label,milestones:[milestone("Initial Amount"),milestone("Final Amount")]});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added custom R&D");openScholar(id);};
-window.removeCustom=async(id,cid)=>{const ns=JSON.parse(JSON.stringify(scholar(id)));ns.research.custom=(ns.research.custom||[]).filter(x=>x.id!==cid);ns.updatedBy=currentUserName();await saveScholarObject(ns,"Removed custom R&D");openScholar(id);};
+window.removeResearch=async function(id,type,index){if(!researchAreaAllowed())return;var ns=JSON.parse(JSON.stringify(scholar(id)));if(type==='paper'||type==='simulation')ns.research[type+'s'][index-1]=null;else ns.research[type]={};ns.updatedBy=currentUserName();await saveScholarObject(ns,'Removed '+type);openScholar(id);};
+window.addCustom=async function(id){if(!researchAreaAllowed())return;var label=prompt('Custom R&D service name:');if(!label)return;var ns=JSON.parse(JSON.stringify(scholar(id)));ns.research.custom=ns.research.custom||[];ns.research.custom.push({id:uid('svc'),label:label,milestones:[milestone('Initial Amount'),milestone('Final Amount')]});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Added custom R&D');openScholar(id);};
+window.removeCustom=async function(id,cid){if(!researchAreaAllowed())return;var ns=JSON.parse(JSON.stringify(scholar(id)));ns.research.custom=(ns.research.custom||[]).filter(function(x){return x.id!==cid});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Removed custom R&D');openScholar(id);};
 
-function journalHTML(s){
- const edit=journalAllowed(),pay=paymentAreaAllowed();
- return `<div class="service-head"><div><h3>Journal Publication</h3><div class="sub">Scopus, SCIE and Random Login Paper.</div></div>${edit?`<button class="btn primary" onclick="addJournal('${s.id}')">+ Add Journal</button>`:""}</div>${(s.journalPublications||[]).map(x=>`<div class="service"><div class="service-head"><div><div class="service-title">${esc(x.type)} • ${esc(x.journal)}</div><div class="meta">Manuscript: ${esc(x.manuscript||"-")}</div></div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','journalPublications','${x.id}')">Remove</button>`:""}</div>
- <div class="form"><div><label>Total Cost (₹)</label><input type="number" ${pay||edit?"":"disabled"} value="${Number(x.total||0)}" onchange="editObject('${s.id}','journalPublications','${x.id}','total',this.value)"></div>
- <div><label>Publication Status</label><select ${edit||pay?"":"disabled"} onchange="editObject('${s.id}','journalPublications','${x.id}','status',this.value)"><option ${x.status==="In Progress"?"selected":""}>In Progress</option><option ${x.status==="Published"?"selected":""}>Published</option><option ${x.status==="Cancelled"?"selected":""}>Cancelled</option></select></div></div>
- <div class="rows">${(x.milestones||[]).map(m=>milestoneRow(s,m,edit,"journal")).join("")}</div></div>`).join("")||'<div class="empty">No journal publications.</div>'}`;
-}
-window.addJournal=async(id)=>{const type=prompt("Scopus / SCIE / Random Login Paper","Scopus");if(!type)return;const journal=prompt("Journal Name:","");if(!journal)return;const manuscript=prompt("Manuscript ID / Paper Title:","")||"";const total=Number(prompt("Journal Cost (₹):","0")||0);const ns=JSON.parse(JSON.stringify(scholar(id)));ns.journalPublications.push({id:uid("jp"),type,journal,manuscript,total,status:"In Progress",milestones:[{...milestone("Journal Publication Payment"),amount:total}]});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added journal publication");openScholar(id);};
-window.removeItem=async(id,key,itemid)=>{const ns=JSON.parse(JSON.stringify(scholar(id)));ns[key]=(ns[key]||[]).filter(x=>x.id!==itemid);ns.updatedBy=currentUserName();await saveScholarObject(ns,"Removed "+key);openScholar(id);};
-
-function journalAuthorsHTML(s){
- const edit=journalAllowed();
- return `<div class="service-head"><div><h3>Journal Author Positions</h3><div class="sub">Maximum 7 positions.</div></div>${edit?`<button class="btn primary" onclick="addJournalAuthor('${s.id}')">+ Add Position</button>`:""}</div>${(s.journalAuthors||[]).map(x=>`<div class="service"><div class="service-head"><div class="service-title">Position ${x.position} • ${esc(x.journal)}</div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','journalAuthors','${x.id}')">Remove</button>`:""}</div><div class="rows">${(x.milestones||[]).map(m=>milestoneRow(s,m,edit,"journal")).join("")}</div></div>`).join("")||'<div class="empty">No journal author positions.</div>'}`;
-}
-window.addJournalAuthor=async(id)=>{const s=scholar(id);if((s.journalAuthors||[]).length>=7){alert("Maximum 7 positions.");return;}const used=s.journalAuthors.map(x=>x.position),pos=Number(prompt("Position 1 to 7:",String([1,2,3,4,5,6,7].find(x=>!used.includes(x))||1)));if(!pos||pos<1||pos>7||used.includes(pos)){alert("Select an unused position 1–7.");return;}const journal=prompt("Journal Name:","")||"";const names=pos===1?["Paper Write-up Cost","Login Amount","Acceptance Amount"]:["Login Amount","Acceptance Amount"];const ns=JSON.parse(JSON.stringify(s));ns.journalAuthors.push({id:uid("ja"),position:pos,journal,milestones:names.map(milestone)});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added journal author position "+pos);openScholar(id);};
-
-function patentHTML(s){
- const edit=patentAllowed();
- return `<div class="service-head"><div><h3>Patent Author Positions</h3><div class="sub">Maximum 8 positions, each with separate cost/status.</div></div>${edit?`<button class="btn primary" onclick="addPatent('${s.id}')">+ Add Position</button>`:""}</div>${(s.patentAuthors||[]).map(x=>`<div class="service"><div class="service-head"><div class="service-title">Position ${x.position} • ${esc(x.patent)}</div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','patentAuthors','${x.id}')">Remove</button>`:""}</div><div class="form"><div><label>Cost (₹)</label><input type="number" ${edit||paymentAreaAllowed()?"":"disabled"} value="${Number(x.amount||0)}" onchange="editObject('${s.id}','patentAuthors','${x.id}','amount',this.value)"></div><div><label>Status</label><select ${edit||paymentAreaAllowed()?"":"disabled"} onchange="editObject('${s.id}','patentAuthors','${x.id}','status',this.value)"><option ${x.status==="Pending"?"selected":""}>Pending</option><option ${x.status==="Paid"?"selected":""}>Paid</option><option ${x.status==="Overdue"?"selected":""}>Overdue</option></select></div><div><label>Due Date</label><input type="date" ${edit||paymentAreaAllowed()?"":"disabled"} value="${esc(x.due||"")}" onchange="editObject('${s.id}','patentAuthors','${x.id}','due',this.value)"></div></div></div>`).join("")||'<div class="empty">No patent positions.</div>'}`;
-}
-window.addPatent=async(id)=>{const s=scholar(id);if((s.patentAuthors||[]).length>=8){alert("Maximum 8 positions.");return;}const used=s.patentAuthors.map(x=>x.position),pos=Number(prompt("Position 1 to 8:",String([1,2,3,4,5,6,7,8].find(x=>!used.includes(x))||1)));if(!pos||pos<1||pos>8||used.includes(pos)){alert("Select an unused position 1–8.");return;}const patent=prompt("Patent / Invention Name:","")||"";const ns=JSON.parse(JSON.stringify(s));ns.patentAuthors.push({id:uid("pa"),position:pos,patent,amount:0,status:"Pending",due:""});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added patent author position "+pos);openScholar(id);};
-
-function otherHTML(s){const edit=["owner","boss","accounts"].includes(role);return `<div class="service-head"><div><h3>Other / Miscellaneous</h3></div>${edit?`<button class="btn primary" onclick="addOther('${s.id}')">+ Add</button>`:""}</div>${(s.other||[]).map(x=>`<div class="service"><div class="service-head"><div class="service-title">${esc(x.service)}</div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','other','${x.id}')">Remove</button>`:""}</div><div class="form"><div><label>Amount</label><input type="number" ${edit?"":"disabled"} value="${Number(x.amount||0)}" onchange="editObject('${s.id}','other','${x.id}','amount',this.value)"></div><div><label>Status</label><select ${edit?"":"disabled"} onchange="editObject('${s.id}','other','${x.id}','status',this.value)"><option ${x.status==="Pending"?"selected":""}>Pending</option><option ${x.status==="Paid"?"selected":""}>Paid</option><option ${x.status==="Overdue"?"selected":""}>Overdue</option></select></div></div></div>`).join("")||'<div class="empty">No other payments.</div>'};}
-window.addOther=async(id)=>{const service=prompt("Service name:","");if(!service)return;const amount=Number(prompt("Amount (₹):","0")||0),ns=JSON.parse(JSON.stringify(scholar(id)));ns.other.push({id:uid("ot"),service,amount,status:"Pending",due:""});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added other payment");openScholar(id);};
-
-function profileHTML(s){const edit=["owner","boss","accounts"].includes(role);return `<div class="form"><div><label>Scholar Name</label><input id="pName" ${edit?"":"disabled"} value="${esc(s.name)}"></div><div><label>Customer ID</label><input id="pCode" ${edit?"":"disabled"} value="${esc(s.code||"")}"></div><div><label>Phone</label><input id="pPhone" ${edit?"":"disabled"} value="${esc(s.phone)}"></div><div><label>Email</label><input id="pEmail" ${edit?"":"disabled"} value="${esc(s.email||"")}"></div><div class="full"><label>Institution</label><input id="pInst" ${edit?"":"disabled"} value="${esc(s.institution||"")}"></div><div class="full"><label>Guide</label><input id="pGuide" ${edit?"":"disabled"} value="${esc(s.guide||"")}"></div><div class="full"><label>Notes</label><textarea id="pNotes" ${edit?"":"disabled"}>${esc(s.notes||"")}</textarea></div></div><div class="actions">${edit?`<button class="btn primary" onclick="saveProfile('${s.id}')">Save Profile</button>`:""}<button class="btn ${s.completed?"secondary":"success"}" onclick="toggleComplete('${s.id}')">${s.completed?"Reopen":"Mark Work Complete"}</button></div>`;}
-window.saveProfile=async(id)=>{const ns=JSON.parse(JSON.stringify(scholar(id)));Object.assign(ns,{name:$("pName").value.trim(),code:$("pCode").value.trim(),phone:$("pPhone").value.trim(),email:$("pEmail").value.trim(),institution:$("pInst").value.trim(),guide:$("pGuide").value.trim(),notes:$("pNotes").value});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Updated scholar profile");openScholar(id);};
-window.toggleComplete=async(id)=>{if(!["owner","boss","accounts"].includes(role)){alert("Only Owner, Boss or Accounts can change completion status.");return;}const ns=JSON.parse(JSON.stringify(scholar(id)));ns.completed=!ns.completed;ns.updatedBy=currentUserName();await saveScholarObject(ns,ns.completed?"Marked completed":"Reopened scholar");openScholar(id);};
+window.addJournal=async function(id){if(!journalAllowed())return;var type=prompt('Scopus / SCIE / Random Login Paper','Scopus');if(!type)return;var journal=prompt('Journal Name:','');if(!journal)return;var manuscript=prompt('Manuscript ID / Paper Title:','')||'';var total=Number(prompt('Journal Cost (₹):','0')||0);var ns=JSON.parse(JSON.stringify(scholar(id)));ns.journalPublications=ns.journalPublications||[];ns.journalPublications.push({id:uid('jp'),type:type,journal:journal,manuscript:manuscript,total:total,status:'In Progress',milestones:[Object.assign(milestone('Journal Publication Payment'),{amount:total})]});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Added journal publication');openScholar(id);};
+window.addJournalAuthor=async function(id){if(!journalAllowed())return;var s=scholar(id);if((s.journalAuthors||[]).length>=7){alert('Maximum 7 positions.');return;}var used=(s.journalAuthors||[]).map(function(x){return x.position});var pos=Number(prompt('Position 1 to 7:',String([1,2,3,4,5,6,7].find(function(x){return !used.includes(x)})||1)));if(!pos||pos<1||pos>7||used.includes(pos)){alert('Select an unused position 1–7.');return;}var journal=prompt('Journal Name:','')||'';var names=pos===1?['Paper Write-up Cost','Login Amount','Acceptance Amount']:['Login Amount','Acceptance Amount'];var ns=JSON.parse(JSON.stringify(s));ns.journalAuthors=ns.journalAuthors||[];ns.journalAuthors.push({id:uid('ja'),position:pos,journal:journal,milestones:names.map(milestone)});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Added journal author position '+pos);openScholar(id);};
+window.addPatent=async function(id){if(!patentAllowed())return;var s=scholar(id);if((s.patentAuthors||[]).length>=8){alert('Maximum 8 positions.');return;}var used=(s.patentAuthors||[]).map(function(x){return x.position});var pos=Number(prompt('Position 1 to 8:',String([1,2,3,4,5,6,7,8].find(function(x){return !used.includes(x)})||1)));if(!pos||pos<1||pos>8||used.includes(pos)){alert('Select an unused position 1–8.');return;}var patent=prompt('Patent / Invention Name:','')||'';var ns=JSON.parse(JSON.stringify(s));ns.patentAuthors=ns.patentAuthors||[];ns.patentAuthors.push({id:uid('pa'),position:pos,patent:patent,amount:0,status:'Pending',due:''});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Added patent author position '+pos);openScholar(id);};
+window.addOther=async function(id){if(!['owner','boss','accounts'].includes(role))return;var service=prompt('Service name:','');if(!service)return;var amount=Number(prompt('Amount (₹):','0')||0),ns=JSON.parse(JSON.stringify(scholar(id)));ns.other=ns.other||[];ns.other.push({id:uid('ot'),service:service,amount:amount,status:'Pending',due:''});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Added other payment');openScholar(id);};
+window.removeItem=async function(id,key,itemid){var ns=JSON.parse(JSON.stringify(scholar(id)));ns[key]=(ns[key]||[]).filter(function(x){return x.id!==itemid});ns.updatedBy=currentUserName();await saveScholarObject(ns,'Removed '+key);openScholar(id);};
 
 window.editMilestone=async(sid,mid,key,val)=>{
  const ns=JSON.parse(JSON.stringify(scholar(sid))), found=findM(ns,mid);if(!found)return;
