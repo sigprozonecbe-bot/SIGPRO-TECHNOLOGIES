@@ -1,0 +1,1 @@
+SigPro v6 stable app. Replace index.html and sw.js in GitHub. Publish database.rules.json in Firebase Realtime Database -> Rules. Then test in Chrome Incognito. This version defines the missing write/save functions and reads the current user role directly.
