@@ -153,7 +153,7 @@ const firebaseConfig = {
   appId: "1:501000972995:web:82e85ab1d176f6ddb51076",
   measurementId: "G-PRVZ38GTFS"
 };
-const CONFIGURED = firebaseConfig.apiKey.length > 20 && !!firebaseConfig.projectId && !!firebaseConfig.databaseURL;
+const CONFIGURED=!firebaseConfig.apiKey.startsWith("PASTE_")&&!firebaseConfig.databaseURL.startsWith("PASTE_");
 
 let auth=null,dbase=null,user=null,role="viewer",company={scholars:{},users:{},activity:{}},unsubs=[];
 

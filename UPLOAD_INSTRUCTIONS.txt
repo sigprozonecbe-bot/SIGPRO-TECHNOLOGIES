@@ -1,0 +1,14 @@
+SIGPRO FINAL MOBILE FIX
+
+1. In GitHub, replace BOTH:
+   - index.html
+   - sw.js
+2. Commit both to the main branch.
+3. Wait for GitHub Pages to deploy.
+4. On your computer open the SigPro URL in an Incognito window first.
+5. On Android Chrome, open the same URL and refresh once before installing.
+6. If an old installed PWA still shows old behaviour, remove the old SigPro icon and reinstall it from the current website.
+7. Do not enter real customer/payment data until login is confirmed.
+
+The HTML uses the exact Firebase configuration supplied from the Firebase console.
+The service worker version is v3 and does not serve a stale cached index.html.
