@@ -1,3 +1,4 @@
-SigPro Technologies - Firebase Connected Fix
-This build fixes the JavaScript error that prevented the Login button from responding.
-Firebase configuration for project: sigpro-technologies
+SigPro Technologies - Firebase Connected Fix V2
+Fixed Firebase Web API key capitalization to exactly match the Firebase console configuration.
+Firebase project: sigpro-technologies
+Realtime Database: Singapore (asia-southeast1)

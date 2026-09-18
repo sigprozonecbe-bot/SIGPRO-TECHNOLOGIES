@@ -144,7 +144,7 @@ import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from
 import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAgntknaNURZIh6JYmFTZUxQmwvAoBb6Pk",
+  apiKey: "AIzaSyAgntknaNURZIH6JYmFTZUxQmwvAoBb6Pk",
   authDomain: "sigpro-technologies.firebaseapp.com",
   databaseURL: "https://sigpro-technologies-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "sigpro-technologies",
@@ -153,7 +153,7 @@ const firebaseConfig = {
   appId: "1:501000972995:web:82e85ab1d176f6ddb51076",
   measurementId: "G-PRVZ38GTFS"
 };
-const CONFIGURED=!firebaseConfig.apiKey.startsWith("PASTE_")&&!firebaseConfig.databaseURL.startsWith("PASTE_");
+const CONFIGURED = firebaseConfig.apiKey.length > 20 && !!firebaseConfig.projectId && !!firebaseConfig.databaseURL;
 
 let auth=null,dbase=null,user=null,role="viewer",company={scholars:{},users:{},activity:{}},unsubs=[];
 
