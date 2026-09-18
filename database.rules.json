@@ -2,7 +2,21 @@
   "rules": {
     "company": {
       ".read": "auth != null && root.child('company/users').child(auth.uid).child('role').val() != null",
-      ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'accounts' || root.child('company/users').child(auth.uid).child('role').val() == 'r&d' || root.child('company/users').child(auth.uid).child('role').val() == 'journal' || root.child('company/users').child(auth.uid).child('role').val() == 'patent')"
+      "users": {
+        "$uid": {
+          ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss')"
+        }
+      },
+      "scholars": {
+        "$scholarId": {
+          ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor' || root.child('company/users').child(auth.uid).child('role').val() == 'r&d' || root.child('company/users').child(auth.uid).child('role').val() == 'journal' || root.child('company/users').child(auth.uid).child('role').val() == 'patent' || root.child('company/users').child(auth.uid).child('role').val() == 'accounts')"
+        }
+      },
+      "activity": {
+        "$activityId": {
+          ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor' || root.child('company/users').child(auth.uid).child('role').val() == 'r&d' || root.child('company/users').child(auth.uid).child('role').val() == 'journal' || root.child('company/users').child(auth.uid).child('role').val() == 'patent' || root.child('company/users').child(auth.uid).child('role').val() == 'accounts')"
+        }
+      }
     }
   }
 }

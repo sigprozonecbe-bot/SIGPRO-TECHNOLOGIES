@@ -124,7 +124,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
           <div class="full"><label>User UID</label><input id="uUid" placeholder="Paste Firebase Authentication UID"></div>
           <div><label>Name</label><input id="uName"></div>
           <div><label>Email</label><input id="uEmail"></div>
-          <div><label>Role</label><select id="uRole"><option>owner</option><option>boss</option><option>r&d</option><option>journal</option><option>patent</option><option>accounts</option><option>viewer</option></select></div>
+          <div><label>Role</label><select id="uRole"><option>owner</option><option>boss</option><option>editor</option><option>r&d</option><option>journal</option><option>patent</option><option>accounts</option><option>viewer</option></select></div>
         </div>
         <div class="actions"><button class="btn primary" onclick="saveUserRole()">Save / Update User</button></div>
         <div class="note">Owner and Boss: full access. R&D: research area. Journal: publication and journal author area. Patent: patent area. Accounts: payment follow-up. Viewer: read-only.</div>
@@ -164,7 +164,7 @@ function norm(s){return String(s??"").trim().toLowerCase();}
 function uid(prefix="id"){return prefix+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);}
 function today(){return new Date().toISOString().slice(0,10);}
 function roleCan(area){
-  if(["owner","boss"].includes(role))return true;
+  if(["owner","boss","editor"].includes(role))return true;
   if(area==="research")return role==="r&d";
   if(area==="journal")return role==="journal";
   if(area==="patent")return role==="patent";
@@ -172,7 +172,7 @@ function roleCan(area){
   return false;
 }
 function canEdit(area){return roleCan(area);}
-function canCreateScholar(){return ["owner","boss","accounts","r&d","journal","patent"].includes(role);}
+function canCreateScholar(){return ["owner","boss","editor","accounts","r&d","journal","patent"].includes(role);}
 function currentUserName(){return company.users?.[user?.uid]?.name||user?.email||"Unknown";}
 
 function setStatus(t,ok=true){$("status").textContent=(ok?"☁ ":"⚠ ")+t;$("status").className="status "+(ok?"ok":"bad");}

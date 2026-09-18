@@ -1,0 +1,17 @@
+SIGPRO EDITOR ROLE SETUP
+
+The Editor role gives a staff member editing access to scholar/work/payment details without giving permission to manage users.
+
+1. Create the staff member in Firebase -> Authentication -> Users -> Add user.
+2. Copy the staff member's full Firebase User UID.
+3. Sign in to the SigPro app as Owner or Boss.
+4. Open Users & Roles.
+5. Enter the UID, name and email.
+6. Select role: editor.
+7. Save / Update User.
+8. The staff member uses the same SigPro URL with their own email/password.
+
+Editor can edit scholar, R&D, journal, author-position, patent, other and payment records.
+Editor cannot manage user roles.
+
+After uploading this version, publish the contents of database.rules.json in Firebase -> Realtime Database -> Rules.
