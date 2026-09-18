@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#173ea6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SigPro">
+<link rel="manifest" href="./manifest.webmanifest">
+<title>SigPro Technologies — Scholar CRM & Payment Follow-up</title>
+<style>
+:root{--p:#173ea6;--p2:#2457d6;--bg:#f4f7fb;--card:#fff;--txt:#172033;--muted:#66748a;--bd:#dbe3ee;--green:#148653;--gbg:#e8f7ef;--red:#b42318;--rbg:#fdecea;--amb:#936200;--abg:#fff4d6;--shadow:0 8px 25px rgba(18,37,69,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,Segoe UI,Arial,sans-serif}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.header{background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;padding:16px 16px calc(16px + env(safe-area-inset-top));position:sticky;top:0;z-index:20}
+.header-in{max-width:1450px;margin:auto;display:flex;gap:12px;align-items:center;justify-content:space-between}.brand h1{margin:0;font-size:22px}.brand p{margin:4px 0 0;font-size:12px;opacity:.9}
+.head-btns{display:flex;gap:7px;flex-wrap:wrap}.head-btns button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);color:#fff;padding:9px 11px;border-radius:9px;font-weight:800}
+.wrap{max-width:1450px;margin:auto;padding:16px}.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.stat{background:var(--card);border:1px solid var(--bd);border-radius:13px;padding:13px;box-shadow:var(--shadow)}.stat .k{font-size:10px;color:var(--muted);font-weight:900;text-transform:uppercase}.stat .v{font-size:21px;font-weight:900;margin-top:5px}
+.nav{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.nav button{background:#fff;border:1px solid var(--bd);padding:9px 13px;border-radius:9px;font-weight:800;color:#34445d}.nav button.active{background:var(--p);border-color:var(--p);color:#fff}
+.page{display:none}.page.active{display:block}.grid2{display:grid;grid-template-columns:1fr 1.4fr;gap:14px}.card{background:#fff;border:1px solid var(--bd);border-radius:15px;padding:16px;box-shadow:var(--shadow)}.card h2{margin:0 0 3px;font-size:18px}.sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:9px}.full{grid-column:1/-1}label{display:block;font-size:11px;font-weight:900;margin:0 0 5px}input,select,textarea{width:100%;border:1px solid #cdd7e5;border-radius:9px;padding:10px 11px;background:#fff;color:var(--txt)}textarea{min-height:70px;resize:vertical}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}.btn{border:0;border-radius:9px;padding:10px 12px;font-weight:800}.primary{background:var(--p);color:#fff}.secondary{background:#edf2f8;color:#2b3a51}.success{background:var(--green);color:#fff}.danger{background:var(--rbg);color:var(--red)}.phone{background:var(--gbg);color:#0e6d43}
+.toolbar{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}.toolbar .l,.toolbar .r{display:flex;gap:7px;flex-wrap:wrap}.toolbar input{min-width:250px}
+.table-wrap{overflow:auto;border:1px solid var(--bd);border-radius:11px}table{width:100%;border-collapse:collapse;min-width:1050px}th,td{padding:9px;border-bottom:1px solid #e8edf4;text-align:left;vertical-align:top;font-size:12px}th{background:#f8fafc;font-size:10px;text-transform:uppercase;color:#536176;position:sticky;top:0;z-index:1}.empty{text-align:center;padding:28px;color:var(--muted)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:900}.active{background:#eef4ff;color:#3154a0}.paid{background:var(--gbg);color:#126d46}.pending{background:var(--abg);color:var(--amb)}.overdue{background:var(--rbg);color:var(--red)}.role{background:#eef1f6;color:#4b5d76}
+.service{border:1px solid var(--bd);border-radius:11px;padding:11px;background:#fbfcff;margin-bottom:9px}.service-title{font-weight:900}.meta{font-size:11px;color:var(--muted);margin-top:3px}.service-head{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}.rows{display:grid;gap:7px;margin-top:9px}.mrow{display:grid;grid-template-columns:1.3fr .75fr .75fr .8fr auto;gap:7px;align-items:center;border:1px solid #e4eaf1;border-radius:9px;padding:7px;background:#fff}.mrow .nm{font-size:11px;font-weight:800}.small{font-size:10px;color:var(--muted)}
+.pillbar{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.pill{background:#f0f4f9;border-radius:999px;padding:6px 8px;font-size:10px;font-weight:900}
+.alert{border:1px solid #eadca8;background:#fffaf0;border-radius:10px;padding:10px;margin:7px 0}.alert.over{border-color:#f0c5c0;background:#fff4f2}.alert-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.modal-bg{position:fixed;inset:0;background:rgba(10,20,38,.58);z-index:100;display:none;align-items:center;justify-content:center;padding:14px}.modal{width:min(980px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:17px;padding:16px}.modal-sm{width:min(540px,100%)}
+.login{position:fixed;inset:0;z-index:200;background:linear-gradient(135deg,#0e2e70,#2457d6);display:flex;align-items:center;justify-content:center;padding:18px}.login-card{width:min(420px,100%);background:#fff;border-radius:19px;padding:23px;box-shadow:0 25px 70px rgba(0,0,0,.3)}.login-card h1{margin:0}.login-card p{color:var(--muted);font-size:12px}.login-card input{margin-bottom:9px}
+.status{position:fixed;right:10px;bottom:10px;background:#fff;border:1px solid var(--bd);border-radius:999px;padding:6px 9px;font-size:10px;font-weight:900;z-index:30;box-shadow:0 4px 16px rgba(10,20,40,.1)}.ok{color:var(--green)}.bad{color:var(--red)}
+.note{border:1px dashed #bdcadb;background:#f7faff;border-radius:10px;padding:9px;font-size:10px;color:#536379;margin-top:9px}
+@media(max-width:1150px){.stats{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}@media(max-width:720px){.wrap{padding:10px}.stats{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:1fr}.full{grid-column:auto}.toolbar input{min-width:200px}.header-in{align-items:flex-start;flex-direction:column;width:100%}.head-btns{width:100%}.head-btns button{flex:1}.mrow{grid-template-columns:1fr 1fr}.mrow .nm{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<div id="loginScreen" class="login">
+  <div class="login-card">
+    <h1>SigPro Technologies</h1>
+    <p>Multi-user Scholar Work & Payment Follow-up</p>
+    <label>Email</label><input id="email" type="email" placeholder="Company email">
+    <label>Password</label><input id="password" type="password" placeholder="Password">
+    <button class="btn primary" style="width:100%" onclick="login()">Login</button>
+    <div id="loginMsg" style="color:#b42318;font-size:11px;margin-top:8px"></div>
+    <div class="note">Create user accounts in Firebase Authentication. Assign each person's role from the Admin panel after they have logged in once.</div>
+  </div>
+</div>
+
+<header class="header">
+  <div class="header-in">
+    <div class="brand"><h1>SigPro Technologies</h1><p>Shared Scholar CRM & Payment Follow-up</p></div>
+    <div class="head-btns">
+      <button onclick="showPage('dashboard')">Dashboard</button>
+      <button onclick="openAlerts()">🔔 Alerts</button>
+      <button id="adminBtn" onclick="showPage('admin')">⚙ Users</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="stats">
+    <div class="stat"><div class="k">Active Scholars</div><div class="v" id="stActive">0</div></div>
+    <div class="stat"><div class="k">Total Scholars</div><div class="v" id="stTotal">0</div></div>
+    <div class="stat"><div class="k">Contract</div><div class="v" id="stContract">₹0</div></div>
+    <div class="stat"><div class="k">Received</div><div class="v" id="stPaid">₹0</div></div>
+    <div class="stat"><div class="k">Outstanding</div><div class="v" id="stDue">₹0</div></div>
+    <div class="stat"><div class="k">Overdue</div><div class="v" id="stOver">₹0</div></div>
+  </section>
+
+  <nav class="nav" id="nav">
+    <button data-p="dashboard" onclick="showPage('dashboard')" class="active">Dashboard</button>
+    <button data-p="scholars" onclick="showPage('scholars')">Scholars</button>
+    <button data-p="add" onclick="showPage('add')">Add Scholar</button>
+    <button data-p="admin" onclick="showPage('admin')">Users & Roles</button>
+  </nav>
+
+  <section id="dashboard" class="page active">
+    <div class="grid2">
+      <div class="card"><div class="service-head"><div><h2>Payment Follow-up</h2><div class="sub">Pending and overdue customer payments.</div></div><button class="btn primary" onclick="openAlerts()">View All</button></div><div id="dashAlerts"></div></div>
+      <div class="card"><div class="service-head"><div><h2>Active Work</h2><div class="sub">Open scholar accounts.</div></div><button class="btn secondary" onclick="showPage('scholars')">All Scholars</button></div><div id="dashActive"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h2>Category Totals</h2><div class="sub">Live company totals from the shared database.</div><div class="pillbar" id="catTotals"></div></div>
+  </section>
+
+  <section id="scholars" class="page">
+    <div class="card">
+      <div class="toolbar"><div class="l"><input id="search" placeholder="Search scholar, phone, institution..." oninput="renderScholars()"><select id="filter" onchange="renderScholars()"><option>ALL</option><option>ACTIVE</option><option>COMPLETED</option></select></div><div class="r"><button class="btn primary" onclick="showPage('add')">+ Add Scholar</button></div></div>
+      <div class="table-wrap"><table><thead><tr><th>Scholar</th><th>Phone</th><th>Institution</th><th>Services</th><th>Contract</th><th>Received</th><th>Outstanding</th><th>Status</th><th>Updated By</th><th></th></tr></thead><tbody id="scholarBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <section id="add" class="page">
+    <div class="grid2">
+      <div class="card">
+        <h2>Add Scholar / Customer</h2><div class="sub">Create one master record; all work and payments stay under it.</div>
+        <div class="form">
+          <div><label>Scholar Name *</label><input id="aName"></div>
+          <div><label>Customer ID</label><input id="aCode"></div>
+          <div><label>Phone Number *</label><input id="aPhone" type="tel"></div>
+          <div><label>Email</label><input id="aEmail" type="email"></div>
+          <div class="full"><label>University / Institution</label><input id="aInst"></div>
+          <div class="full"><label>Guide / Supervisor</label><input id="aGuide"></div>
+          <div class="full"><label>Notes</label><textarea id="aNotes"></textarea></div>
+        </div>
+        <div class="actions"><button class="btn primary" onclick="addScholar()">Save Scholar</button><button class="btn secondary" onclick="clearAdd()">Clear</button></div>
+      </div>
+      <div class="card"><h2>SigPro Work Structure</h2><div class="sub">Available categories in the system.</div>
+        <div class="service"><b>Research Work / R&D</b><div class="meta">3 papers, 3 simulations, synopsis, thesis; milestone-wise amounts.</div></div>
+        <div class="service"><b>Journal Publication</b><div class="meta">Scopus, SCIE, Random Login Paper; journal-wise cost/status.</div></div>
+        <div class="service"><b>Journal Author Position</b><div class="meta">Up to 7 positions; position 1 has write-up + login + acceptance; positions 2–7 have login + acceptance.</div></div>
+        <div class="service"><b>Patent Author Position</b><div class="meta">Up to 8 positions; separate cost/status for each.</div></div>
+        <div class="service"><b>Other</b><div class="meta">Custom service/payment tracking.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="admin" class="page">
+    <div class="grid2">
+      <div class="card">
+        <h2>Users & Roles</h2><div class="sub">Manage access for your company users after they have a Firebase login.</div>
+        <div class="form">
+          <div class="full"><label>User UID</label><input id="uUid" placeholder="Paste Firebase Authentication UID"></div>
+          <div><label>Name</label><input id="uName"></div>
+          <div><label>Email</label><input id="uEmail"></div>
+          <div><label>Role</label><select id="uRole"><option>owner</option><option>boss</option><option>r&d</option><option>journal</option><option>patent</option><option>accounts</option><option>viewer</option></select></div>
+        </div>
+        <div class="actions"><button class="btn primary" onclick="saveUserRole()">Save / Update User</button></div>
+        <div class="note">Owner and Boss: full access. R&D: research area. Journal: publication and journal author area. Patent: patent area. Accounts: payment follow-up. Viewer: read-only.</div>
+      </div>
+      <div class="card"><h2>Current Users</h2><div id="userList"></div></div>
+    </div>
+    <div class="card" style="margin-top:14px"><h2>Activity History</h2><div class="sub">Shows who changed the shared data.</div><div class="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Action</th><th>Record</th><th>Details</th></tr></thead><tbody id="activityBody"></tbody></table></div></div>
+  </section>
+</div>
+
+<div class="status bad" id="status">Not connected</div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "PASTE_YOUR_DATABASE_URL",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  storageBucket: "PASTE_YOUR_PROJECT.firebasestorage.app",
+  messagingSenderId: "PASTE_YOUR_MESSAGING_SENDER_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+const CONFIGURED=!firebaseConfig.apiKey.startsWith("PASTE_")&&!firebaseConfig.databaseURL.startsWith("PASTE_");
+
+let auth=null,dbase=null,user=null,role="viewer",company={scholars:{},users:{},activity:{}},unsubs=[];
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+function money(n){return "₹"+Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function norm(s){return String(s??"").trim().toLowerCase();}
+function uid(prefix="id"){return prefix+"_"+Date.now()+"_"+Math.random().toString(36).slice(2,7);}
+function today(){return new Date().toISOString().slice(0,10);}
+function roleCan(area){
+  if(["owner","boss"].includes(role))return true;
+  if(area==="research")return role==="r&d";
+  if(area==="journal")return role==="journal";
+  if(area==="patent")return role==="patent";
+  if(area==="payments")return role==="accounts";
+  return false;
+}
+function canEdit(area){return roleCan(area);}
+function canCreateScholar(){return ["owner","boss","accounts","r&d","journal","patent"].includes(role);}
+function currentUserName(){return company.users?.[user?.uid]?.name||user?.email||"Unknown";}
+
+function setStatus(t,ok=true){$("status").textContent=(ok?"☁ ":"⚠ ")+t;$("status").className="status "+(ok?"ok":"bad");}
+window.login=async()=>{if(!CONFIGURED){$("loginMsg").textContent="Firebase setup is required in this file.";return;}const e=$("email").value.trim(),p=$("password").value;if(!e||!p){$("loginMsg").textContent="Enter email and password.";return;}try{await signInWithEmailAndPassword(auth,e,p);$("loginMsg").textContent="";}catch(x){$("loginMsg").textContent=x.message.replace("Firebase: ","");}};
+window.logout=async()=>{if(auth)await signOut(auth);};
+window.showPage=(id)=>{if(id==="admin"&&!["owner","boss"].includes(role))return;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.p===id));if(id==="scholars")renderScholars();if(id==="admin")renderAdmin();};
+
+function showModal(html,small=false){$("modal").className="modal"+(small?" modal-sm":"");$("modal").innerHTML=html;$("modalBg").style.display="flex";}
+window.closeModal=()=>{$("modalBg").style.display="none";};
+$("modalBg").addEventListener("click",e=>{if(e.target.id==="modalBg")closeModal();});
+
+function scholars(){return Object.values(company.scholars||{});}
+function scholar(id){return company.scholars?.[id];}
+function allMilestones(s){
+  const a=[]; const add=(arr,cat,service)=> (arr||[]).forEach(m=>a.push({...m,category:cat,service}));
+  (s.research?.papers||[]).filter(Boolean).forEach(x=>add(x.milestones,"Research Work",x.label));
+  (s.research?.simulations||[]).filter(Boolean).forEach(x=>add(x.milestones,"Research Work",x.label));
+  add(s.research?.synopsis?.milestones,"Research Work","Synopsis");add(s.research?.thesis?.milestones,"Research Work","Thesis");
+  (s.research?.custom||[]).forEach(x=>add(x.milestones,"Research Work",x.label));
+  (s.journalPublications||[]).forEach(x=>add(x.milestones,"Journal Publication",(x.type||"Journal")+" - "+(x.journal||"")));
+  (s.journalAuthors||[]).forEach(x=>add(x.milestones,"Journal Author Position",(x.journal||"Journal")+" - Position "+x.position));
+  (s.patentAuthors||[]).forEach(x=>a.push({...x,category:"Patent Author Position",service:(x.patent||"Patent")+" - Position "+x.position,name:"Patent Position "+x.position}));
+  (s.other||[]).forEach(x=>a.push({...x,category:"Other",service:x.service,name:x.service}));
+  return a;
+}
+function totals(s){let contract=0,paid=0,due=0,over=0;const ms=allMilestones(s);ms.forEach(m=>{contract+=Number(m.amount||0);if(norm(m.status)==="paid")paid+=Number(m.amount||0);else{due+=Number(m.amount||0);if(m.due&&m.due<today())over+=Number(m.amount||0);}});return{contract,paid,due,over,ms};}
+function serviceCount(s){return (s.research?.papers||[]).filter(Boolean).length+(s.research?.simulations||[]).filter(Boolean).length+(s.research?.synopsis?.milestones?.length?1:0)+(s.research?.thesis?.milestones?.length?1:0)+(s.research?.custom||[]).length+(s.journalPublications||[]).length+(s.journalAuthors||[]).length+(s.patentAuthors||[]).length+(s.other||[]).length;}
+
+function refreshStats(){
+  let c=0,p=0,d=0,o=0,a=0;scholars().forEach(s=>{if(!s.completed)a++;const t=totals(s);c+=t.contract;p+=t.paid;d+=t.due;o+=t.over;});
+  $("stActive").textContent=a;$("stTotal").textContent=scholars().length;$("stContract").textContent=money(c);$("stPaid").textContent=money(p);$("stDue").textContent=money(d);$("stOver").textContent=money(o);
+}
+function renderDashboard(){
+  const pending=[];scholars().forEach(s=>totals(s).ms.filter(m=>norm(m.status)!=="paid").forEach(m=>pending.push({...m,scholar:s})));
+  pending.sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));
+  $("dashAlerts").innerHTML=pending.length?pending.slice(0,7).map(alertHTML).join(""):'<div class="empty">No pending payments.</div>';
+  const active=scholars().filter(s=>!s.completed);$("dashActive").innerHTML=active.length?active.slice(0,7).map(s=>{const t=totals(s),pct=t.contract?Math.round(t.paid/t.contract*100):0;return `<div class="service"><div class="service-head"><div><b>${esc(s.name)}</b><div class="meta">${esc(s.phone)} • ${serviceCount(s)} services</div></div><button class="btn secondary" onclick="openScholar('${s.id}')">Open</button></div><div class="small">Received ${money(t.paid)} / ${money(t.contract)} • ${pct}%</div></div>`}).join(""):'<div class="empty">No active scholars.</div>';
+  const cats={"Research Work":0,"Journal Publication":0,"Journal Author Position":0,"Patent Author Position":0,"Other":0};scholars().forEach(s=>allMilestones(s).forEach(m=>cats[m.category]=(cats[m.category]||0)+Number(m.amount||0)));$("catTotals").innerHTML=Object.entries(cats).map(([k,v])=>`<span class="pill">${esc(k)}: ${money(v)}</span>`).join("");
+}
+function alertHTML(x){const over=x.due&&x.due<today();return `<div class="alert ${over?"over":""}"><div class="service-head"><div><b>${esc(x.scholar.name)}</b><div class="small">${esc(x.category)} • ${esc(x.service)} • ${esc(x.name)}</div></div><span class="badge ${over?"overdue":"pending"}">${over?"OVERDUE":"PENDING"}</span></div><div><b>${money(x.amount)}</b>${x.due?" • Due "+esc(x.due):""}</div><div class="alert-actions">${x.scholar.phone?`<a class="btn phone" style="text-decoration:none" href="tel:${esc(x.scholar.phone)}">📞 ${esc(x.scholar.phone)}</a>`:""}<button class="btn secondary" onclick="openScholar('${x.scholar.id}')">Open</button></div></div>`;}
+
+function renderScholars(){
+  const q=norm($("search").value),f=$("filter").value;
+  const rows=scholars().filter(s=>{const blob=norm([s.name,s.phone,s.code,s.institution,s.email,s.guide].join(" "));return(!q||blob.includes(q))&&(f==="ALL"||(f==="ACTIVE"&&!s.completed)||(f==="COMPLETED"&&s.completed));});
+  $("scholarBody").innerHTML=rows.length?rows.map(s=>{const t=totals(s);return `<tr><td><b>${esc(s.name)}</b><br><span class="small">${esc(s.code||"No ID")}</span></td><td><a href="tel:${esc(s.phone)}">${esc(s.phone)}</a></td><td>${esc(s.institution||"-")}</td><td>${serviceCount(s)}</td><td>${money(t.contract)}</td><td>${money(t.paid)}</td><td>${money(t.due)}</td><td><span class="badge ${s.completed?"paid":"active"}">${s.completed?"COMPLETED":"ACTIVE"}</span></td><td>${esc(s.updatedBy||"-")}</td><td><button class="btn primary" onclick="openScholar('${s.id}')">Open</button></td></tr>`}).join(""):'<tr><td colspan="10" class="empty">No scholars found.</td></tr>';
+}
+function renderAll(){refreshStats();renderDashboard();renderScholars();if(["owner","boss"].includes(role))renderAdmin();}
+
+async function write(path,value,action,record,details){
+  const patch={};patch[path]=value;
+  const act=push(ref(dbase,"company/activity")).key;
+  patch["company/activity/"+act]={uid:user.uid,user:currentUserName(),action,record,details:String(details||""),time:Date.now()};
+  await update(ref(dbase),patch);
+}
+function saveScholarObject(s,details="Updated scholar"){
+  return write("company/scholars/"+s.id,s,"UPDATE",s.name,details);
+}
+
+window.addScholar=async()=>{
+ if(!canCreateScholar()){alert("Your role is read-only for scholar creation.");return;}
+ const name=$("aName").value.trim(),phone=$("aPhone").value.trim();if(!name||!phone){alert("Scholar name and phone are required.");return;}
+ const id=uid("sch");
+ const s={id,name,code:$("aCode").value.trim(),phone,email:$("aEmail").value.trim(),institution:$("aInst").value.trim(),guide:$("aGuide").value.trim(),notes:$("aNotes").value.trim(),completed:false,createdAt:Date.now(),updatedBy:currentUserName(),research:{papers:[],simulations:[],custom:[],synopsis:{},thesis:{}},journalPublications:[],journalAuthors:[],patentAuthors:[],other:[]};
+ await write("company/scholars/"+id,s,"CREATE",name,"New scholar/customer");clearAdd();renderAll();openScholar(id);
+};
+window.clearAdd=()=>["aName","aCode","aPhone","aEmail","aInst","aGuide","aNotes"].forEach(id=>$(id).value="");
+
+function researchAreaAllowed(){return canEdit("research")||["owner","boss"].includes(role)}
+function paymentAreaAllowed(){return canEdit("payments")||["owner","boss"].includes(role)}
+function journalAllowed(){return canEdit("journal")||["owner","boss"].includes(role)}
+function patentAllowed(){return canEdit("patent")||["owner","boss"].includes(role)}
+
+function milestone(name){return{id:uid("m"),name,amount:0,due:"",status:"Pending",paidDate:"",notes:""}}
+function serviceBlock(s,type,index,label,names){
+ const arr=(type==="paper"||type==="simulation")?(s.research?.[type+"s"]||[]):null;
+ const obj=arr?arr[index-1]:s.research?.[type];
+ if(!obj)return `<div class="service"><div class="service-head"><div><b>${label}</b><div class="small">Not created</div></div>${researchAreaAllowed()?`<button class="btn secondary" onclick="createResearch('${s.id}','${type}',${index})">Create</button>`:""}</div></div>`;
+ const controls=researchAreaAllowed();
+ return `<div class="service"><div class="service-head"><div><div class="service-title">${esc(label)}</div><div class="meta">R&D milestones</div></div>${controls?`<button class="btn danger" onclick="removeResearch('${s.id}','${type}',${index})">Remove</button>`:""}</div><div class="rows">${(obj.milestones||[]).map(m=>milestoneRow(s,m,researchAreaAllowed(),"research")).join("")}</div></div>`;
+}
+function milestoneRow(s,m,canEditRow,area){
+ const locked=!canEditRow&&!paymentAreaAllowed(); const editable=canEditRow||paymentAreaAllowed();
+ return `<div class="mrow"><div class="nm">${esc(m.name)}<div class="small">Due ${esc(m.due||"-")} • ${esc(m.notes||"")}</div></div>
+ <input type="number" ${editable?"":"disabled"} value="${Number(m.amount||0)}" onchange="editMilestone('${s.id}','${m.id}','amount',this.value)">
+ <select ${editable?"":"disabled"} onchange="editMilestone('${s.id}','${m.id}','status',this.value)"><option ${m.status==="Pending"?"selected":""}>Pending</option><option ${m.status==="Paid"?"selected":""}>Paid</option><option ${m.status==="Overdue"?"selected":""}>Overdue</option><option ${m.status==="Scheduled"?"selected":""}>Scheduled</option></select>
+ <input type="date" ${editable?"":"disabled"} value="${esc(m.due||"")}" onchange="editMilestone('${s.id}','${m.id}','due',this.value)">
+ <button class="btn secondary" ${editable?"":"disabled"} onclick="editNote('${s.id}','${m.id}')">Note</button></div>`;
+}
+function researchHTML(s){
+ let x=[];for(let i=1;i<=3;i++)x.push(serviceBlock(s,"paper",i,"Paper "+i,["Proposal Work Initiation","Paper Write-up Advance","Paper Final Amount"]));
+ for(let i=1;i<=3;i++)x.push(serviceBlock(s,"simulation",i,"Simulation "+i,["Simulation Initiation","Simulation Advance","Simulation Final Amount"]));
+ x.push(serviceBlock(s,"synopsis",0,"Synopsis",["Initial Amount","Final Amount"]));x.push(serviceBlock(s,"thesis",0,"Thesis",["Initial Amount","Final Amount"]));
+ (s.research?.custom||[]).forEach(c=>x.push(`<div class="service"><div class="service-head"><div class="service-title">${esc(c.label)}</div>${researchAreaAllowed()?`<button class="btn danger" onclick="removeCustom('${s.id}','${c.id}')">Remove</button>`:""}</div><div class="rows">${(c.milestones||[]).map(m=>milestoneRow(s,m,researchAreaAllowed(),"research")).join("")}</div></div>`));
+ return `<div class="service-head"><div><h3>Research Work / R&D</h3><div class="sub">Three papers, three simulations, synopsis and thesis.</div></div>${researchAreaAllowed()?`<button class="btn primary" onclick="addCustom('${s.id}')">+ Custom R&D</button>`:""}</div>${x.join("")}`;
+}
+window.createResearch=async(id,type,index)=>{
+ const s=scholar(id),names=type==="paper"?["Proposal Work Initiation","Paper Write-up Advance","Paper Final Amount"]:type==="simulation"?["Simulation Initiation","Simulation Advance","Simulation Final Amount"]:["Initial Amount","Final Amount"];
+ const obj={id:uid("svc"),label:(type==="paper"?"Paper ":"Simulation ")+index,milestones:names.map(milestone)};
+ const ns=JSON.parse(JSON.stringify(s));
+ if(type==="paper"||type==="simulation"){const key=type+"s";ns.research[key]=ns.research[key]||[];while(ns.research[key].length<index)ns.research[key].push(null);ns.research[key][index-1]=obj;}else ns.research[type]=obj;
+ ns.updatedBy=currentUserName();await saveScholarObject(ns,"Created "+obj.label);openScholar(id);
+};
+window.removeResearch=async(id,type,index)=>{if(!researchAreaAllowed())return;const ns=JSON.parse(JSON.stringify(scholar(id)));if(type==="paper"||type==="simulation")ns.research[type+"s"][index-1]=null;else ns.research[type]={};ns.updatedBy=currentUserName();await saveScholarObject(ns,"Removed "+type);openScholar(id);};
+window.addCustom=async(id)=>{const label=prompt("Custom R&D service name:");if(!label)return;const ns=JSON.parse(JSON.stringify(scholar(id)));ns.research.custom=ns.research.custom||[];ns.research.custom.push({id:uid("svc"),label,milestones:[milestone("Initial Amount"),milestone("Final Amount")]});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added custom R&D");openScholar(id);};
+window.removeCustom=async(id,cid)=>{const ns=JSON.parse(JSON.stringify(scholar(id)));ns.research.custom=(ns.research.custom||[]).filter(x=>x.id!==cid);ns.updatedBy=currentUserName();await saveScholarObject(ns,"Removed custom R&D");openScholar(id);};
+
+function journalHTML(s){
+ const edit=journalAllowed(),pay=paymentAreaAllowed();
+ return `<div class="service-head"><div><h3>Journal Publication</h3><div class="sub">Scopus, SCIE and Random Login Paper.</div></div>${edit?`<button class="btn primary" onclick="addJournal('${s.id}')">+ Add Journal</button>`:""}</div>${(s.journalPublications||[]).map(x=>`<div class="service"><div class="service-head"><div><div class="service-title">${esc(x.type)} • ${esc(x.journal)}</div><div class="meta">Manuscript: ${esc(x.manuscript||"-")}</div></div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','journalPublications','${x.id}')">Remove</button>`:""}</div>
+ <div class="form"><div><label>Total Cost (₹)</label><input type="number" ${pay||edit?"":"disabled"} value="${Number(x.total||0)}" onchange="editObject('${s.id}','journalPublications','${x.id}','total',this.value)"></div>
+ <div><label>Publication Status</label><select ${edit||pay?"":"disabled"} onchange="editObject('${s.id}','journalPublications','${x.id}','status',this.value)"><option ${x.status==="In Progress"?"selected":""}>In Progress</option><option ${x.status==="Published"?"selected":""}>Published</option><option ${x.status==="Cancelled"?"selected":""}>Cancelled</option></select></div></div>
+ <div class="rows">${(x.milestones||[]).map(m=>milestoneRow(s,m,edit,"journal")).join("")}</div></div>`).join("")||'<div class="empty">No journal publications.</div>'}`;
+}
+window.addJournal=async(id)=>{const type=prompt("Scopus / SCIE / Random Login Paper","Scopus");if(!type)return;const journal=prompt("Journal Name:","");if(!journal)return;const manuscript=prompt("Manuscript ID / Paper Title:","")||"";const total=Number(prompt("Journal Cost (₹):","0")||0);const ns=JSON.parse(JSON.stringify(scholar(id)));ns.journalPublications.push({id:uid("jp"),type,journal,manuscript,total,status:"In Progress",milestones:[{...milestone("Journal Publication Payment"),amount:total}]});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added journal publication");openScholar(id);};
+window.removeItem=async(id,key,itemid)=>{const ns=JSON.parse(JSON.stringify(scholar(id)));ns[key]=(ns[key]||[]).filter(x=>x.id!==itemid);ns.updatedBy=currentUserName();await saveScholarObject(ns,"Removed "+key);openScholar(id);};
+
+function journalAuthorsHTML(s){
+ const edit=journalAllowed();
+ return `<div class="service-head"><div><h3>Journal Author Positions</h3><div class="sub">Maximum 7 positions.</div></div>${edit?`<button class="btn primary" onclick="addJournalAuthor('${s.id}')">+ Add Position</button>`:""}</div>${(s.journalAuthors||[]).map(x=>`<div class="service"><div class="service-head"><div class="service-title">Position ${x.position} • ${esc(x.journal)}</div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','journalAuthors','${x.id}')">Remove</button>`:""}</div><div class="rows">${(x.milestones||[]).map(m=>milestoneRow(s,m,edit,"journal")).join("")}</div></div>`).join("")||'<div class="empty">No journal author positions.</div>'}`;
+}
+window.addJournalAuthor=async(id)=>{const s=scholar(id);if((s.journalAuthors||[]).length>=7){alert("Maximum 7 positions.");return;}const used=s.journalAuthors.map(x=>x.position),pos=Number(prompt("Position 1 to 7:",String([1,2,3,4,5,6,7].find(x=>!used.includes(x))||1)));if(!pos||pos<1||pos>7||used.includes(pos)){alert("Select an unused position 1–7.");return;}const journal=prompt("Journal Name:","")||"";const names=pos===1?["Paper Write-up Cost","Login Amount","Acceptance Amount"]:["Login Amount","Acceptance Amount"];const ns=JSON.parse(JSON.stringify(s));ns.journalAuthors.push({id:uid("ja"),position:pos,journal,milestones:names.map(milestone)});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added journal author position "+pos);openScholar(id);};
+
+function patentHTML(s){
+ const edit=patentAllowed();
+ return `<div class="service-head"><div><h3>Patent Author Positions</h3><div class="sub">Maximum 8 positions, each with separate cost/status.</div></div>${edit?`<button class="btn primary" onclick="addPatent('${s.id}')">+ Add Position</button>`:""}</div>${(s.patentAuthors||[]).map(x=>`<div class="service"><div class="service-head"><div class="service-title">Position ${x.position} • ${esc(x.patent)}</div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','patentAuthors','${x.id}')">Remove</button>`:""}</div><div class="form"><div><label>Cost (₹)</label><input type="number" ${edit||paymentAreaAllowed()?"":"disabled"} value="${Number(x.amount||0)}" onchange="editObject('${s.id}','patentAuthors','${x.id}','amount',this.value)"></div><div><label>Status</label><select ${edit||paymentAreaAllowed()?"":"disabled"} onchange="editObject('${s.id}','patentAuthors','${x.id}','status',this.value)"><option ${x.status==="Pending"?"selected":""}>Pending</option><option ${x.status==="Paid"?"selected":""}>Paid</option><option ${x.status==="Overdue"?"selected":""}>Overdue</option></select></div><div><label>Due Date</label><input type="date" ${edit||paymentAreaAllowed()?"":"disabled"} value="${esc(x.due||"")}" onchange="editObject('${s.id}','patentAuthors','${x.id}','due',this.value)"></div></div></div>`).join("")||'<div class="empty">No patent positions.</div>'}`;
+}
+window.addPatent=async(id)=>{const s=scholar(id);if((s.patentAuthors||[]).length>=8){alert("Maximum 8 positions.");return;}const used=s.patentAuthors.map(x=>x.position),pos=Number(prompt("Position 1 to 8:",String([1,2,3,4,5,6,7,8].find(x=>!used.includes(x))||1)));if(!pos||pos<1||pos>8||used.includes(pos)){alert("Select an unused position 1–8.");return;}const patent=prompt("Patent / Invention Name:","")||"";const ns=JSON.parse(JSON.stringify(s));ns.patentAuthors.push({id:uid("pa"),position:pos,patent,amount:0,status:"Pending",due:""});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added patent author position "+pos);openScholar(id);};
+
+function otherHTML(s){const edit=["owner","boss","accounts"].includes(role);return `<div class="service-head"><div><h3>Other / Miscellaneous</h3></div>${edit?`<button class="btn primary" onclick="addOther('${s.id}')">+ Add</button>`:""}</div>${(s.other||[]).map(x=>`<div class="service"><div class="service-head"><div class="service-title">${esc(x.service)}</div>${edit?`<button class="btn danger" onclick="removeItem('${s.id}','other','${x.id}')">Remove</button>`:""}</div><div class="form"><div><label>Amount</label><input type="number" ${edit?"":"disabled"} value="${Number(x.amount||0)}" onchange="editObject('${s.id}','other','${x.id}','amount',this.value)"></div><div><label>Status</label><select ${edit?"":"disabled"} onchange="editObject('${s.id}','other','${x.id}','status',this.value)"><option ${x.status==="Pending"?"selected":""}>Pending</option><option ${x.status==="Paid"?"selected":""}>Paid</option><option ${x.status==="Overdue"?"selected":""}>Overdue</option></select></div></div></div>`).join("")||'<div class="empty">No other payments.</div>'};}
+window.addOther=async(id)=>{const service=prompt("Service name:","");if(!service)return;const amount=Number(prompt("Amount (₹):","0")||0),ns=JSON.parse(JSON.stringify(scholar(id)));ns.other.push({id:uid("ot"),service,amount,status:"Pending",due:""});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Added other payment");openScholar(id);};
+
+function profileHTML(s){const edit=["owner","boss","accounts"].includes(role);return `<div class="form"><div><label>Scholar Name</label><input id="pName" ${edit?"":"disabled"} value="${esc(s.name)}"></div><div><label>Customer ID</label><input id="pCode" ${edit?"":"disabled"} value="${esc(s.code||"")}"></div><div><label>Phone</label><input id="pPhone" ${edit?"":"disabled"} value="${esc(s.phone)}"></div><div><label>Email</label><input id="pEmail" ${edit?"":"disabled"} value="${esc(s.email||"")}"></div><div class="full"><label>Institution</label><input id="pInst" ${edit?"":"disabled"} value="${esc(s.institution||"")}"></div><div class="full"><label>Guide</label><input id="pGuide" ${edit?"":"disabled"} value="${esc(s.guide||"")}"></div><div class="full"><label>Notes</label><textarea id="pNotes" ${edit?"":"disabled"}>${esc(s.notes||"")}</textarea></div></div><div class="actions">${edit?`<button class="btn primary" onclick="saveProfile('${s.id}')">Save Profile</button>`:""}<button class="btn ${s.completed?"secondary":"success"}" onclick="toggleComplete('${s.id}')">${s.completed?"Reopen":"Mark Work Complete"}</button></div>`;}
+window.saveProfile=async(id)=>{const ns=JSON.parse(JSON.stringify(scholar(id)));Object.assign(ns,{name:$("pName").value.trim(),code:$("pCode").value.trim(),phone:$("pPhone").value.trim(),email:$("pEmail").value.trim(),institution:$("pInst").value.trim(),guide:$("pGuide").value.trim(),notes:$("pNotes").value});ns.updatedBy=currentUserName();await saveScholarObject(ns,"Updated scholar profile");openScholar(id);};
+window.toggleComplete=async(id)=>{if(!["owner","boss","accounts"].includes(role)){alert("Only Owner, Boss or Accounts can change completion status.");return;}const ns=JSON.parse(JSON.stringify(scholar(id)));ns.completed=!ns.completed;ns.updatedBy=currentUserName();await saveScholarObject(ns,ns.completed?"Marked completed":"Reopened scholar");openScholar(id);};
+
+window.editMilestone=async(sid,mid,key,val)=>{
+ const ns=JSON.parse(JSON.stringify(scholar(sid))), found=findM(ns,mid);if(!found)return;
+ if(key==="amount"){if(!(paymentAreaAllowed()||researchAreaAllowed()||journalAllowed()))return;found.amount=Number(val||0);}
+ else {if(!(paymentAreaAllowed()||researchAreaAllowed()||journalAllowed()))return;found[key]=val;}
+ if(key==="status"&&val==="Paid")found.paidDate=today();ns.updatedBy=currentUserName();await saveScholarObject(ns,"Updated "+found.name);openScholar(sid);
+};
+function findM(s,mid){let out=null;const walk=x=>{if(!x||out)return;if(Array.isArray(x)){x.forEach(walk);return}if(typeof x==="object"){if(x.id===mid&&x.name&&("amount" in x)){out=x;return}Object.values(x).forEach(walk)}};walk(s);return out;}
+window.editNote=async(sid,mid)=>{const ns=JSON.parse(JSON.stringify(scholar(sid))),m=findM(ns,mid);if(!m||!(paymentAreaAllowed()||researchAreaAllowed()||journalAllowed()))return;const note=prompt("Payment/follow-up note:",m.notes||"");if(note===null)return;m.notes=note;ns.updatedBy=currentUserName();await saveScholarObject(ns,"Updated payment note");openScholar(sid);};
+window.editObject=async(sid,key,itemid,field,val)=>{const ns=JSON.parse(JSON.stringify(scholar(sid))),item=(ns[key]||[]).find(x=>x.id===itemid);if(!item)return;const allowed=key==="journalPublications"?journalAllowed()||paymentAreaAllowed():key==="journalAuthors"?journalAllowed():key==="patentAuthors"?patentAllowed()||paymentAreaAllowed():key==="other"?["owner","boss","accounts"].includes(role):false;if(!allowed)return;item[field]=(field==="amount"||field==="total")?Number(val||0):val;ns.updatedBy=currentUserName();await saveScholarObject(ns,"Updated "+key+" "+field);openScholar(sid);};
+
+window.openScholar=(id)=>{
+ const s=scholar(id),t=totals(s);if(!s)return;
+ showModal(`<div class="service-head"><div><h2>${esc(s.name)}</h2><div class="sub">${esc(s.code||"No ID")} • ${esc(s.institution||"")} • ${esc(s.phone)} • Updated by ${esc(s.updatedBy||"-")}</div></div><div class="actions"><a class="btn phone" style="text-decoration:none" href="tel:${esc(s.phone)}">📞 Call</a><button class="btn secondary" onclick="closeModal()">Close</button></div></div>
+ <div class="pillbar"><span class="pill">Contract ${money(t.contract)}</span><span class="pill">Received ${money(t.paid)}</span><span class="pill">Outstanding ${money(t.due)}</span><span class="pill">Overdue ${money(t.over)}</span></div>
+ <div class="tabs" style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0">
+  <button class="tabx btn primary" onclick="tabx('r',this)">Research</button><button class="tabx btn secondary" onclick="tabx('j',this)">Journal</button><button class="tabx btn secondary" onclick="tabx('ja',this)">Journal Authors</button><button class="tabx btn secondary" onclick="tabx('pa',this)">Patent Authors</button><button class="tabx btn secondary" onclick="tabx('o',this)">Other</button><button class="tabx btn secondary" onclick="tabx('p',this)">Profile</button>
+ </div>
+ <div id="sxr">${researchHTML(s)}</div><div id="sxj" class="hidden">${journalHTML(s)}</div><div id="sxja" class="hidden">${journalAuthorsHTML(s)}</div><div id="sxpa" class="hidden">${patentHTML(s)}</div><div id="sxo" class="hidden">${otherHTML(s)}</div><div id="sxp" class="hidden">${profileHTML(s)}</div>`);
+};
+window.tabx=(x,btn)=>{["r","j","ja","pa","o","p"].forEach(k=>$("sx"+k).classList.toggle("hidden",k!==x));document.querySelectorAll(".tabx").forEach(b=>{b.classList.remove("primary");b.classList.add("secondary")});btn.classList.remove("secondary");btn.classList.add("primary");};
+
+window.openAlerts=()=>{const p=[];scholars().forEach(s=>totals(s).ms.filter(m=>norm(m.status)!=="paid").forEach(m=>p.push({...m,scholar:s})));p.sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));showModal(`<div class="service-head"><div><h2>🔔 Payment Follow-up Alerts</h2><div class="sub">Shared with all authorized company users.</div></div><button class="btn secondary" onclick="closeModal()">Close</button></div>${p.length?p.map(alertHTML).join(""):'<div class="empty">No pending payments.</div>'}`);};
+
+function renderAdmin(){
+ if(!["owner","boss"].includes(role))return;
+ const users=Object.values(company.users||{});$("userList").innerHTML=users.length?users.map(u=>`<div class="service"><div class="service-head"><div><b>${esc(u.name||"-")}</b><div class="meta">${esc(u.email||"-")} • UID ${esc(u.uid||"-")}</div></div><span class="badge role">${esc(u.role||"viewer")}</span></div></div>`).join(""):'<div class="empty">No user profiles saved.</div>';
+ const acts=Object.values(company.activity||{}).sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,100);$("activityBody").innerHTML=acts.length?acts.map(a=>`<tr><td>${new Date(a.time||0).toLocaleString()}</td><td>${esc(a.user||"")}</td><td>${esc(a.action||"")}</td><td>${esc(a.record||"")}</td><td>${esc(a.details||"")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No activity yet.</td></tr>';
+}
+window.saveUserRole=async()=>{
+ if(!["owner","boss"].includes(role))return;const uidv=$("uUid").value.trim(),name=$("uName").value.trim(),email=$("uEmail").value.trim(),rv=$("uRole").value;if(!uidv){alert("Paste the Firebase Authentication UID.");return;}
+ const u={uid:uidv,name,email,role:rv,updatedAt:Date.now()};await write("company/users/"+uidv,u,"USER_ROLE",email||uidv,"Set role to "+rv);$("uUid").value=$("uName").value=$("uEmail").value="";alert("User role saved. When that user logs in, the role will be applied.");};
+
+async function start(){
+ if(!CONFIGURED){setStatus("Setup required",false);$("loginScreen").style.display="flex";return;}
+ const app=initializeApp(firebaseConfig);auth=getAuth(app);dbase=getDatabase(app);
+ onAuthStateChanged(auth,async(u)=>{
+  user=u;if(!u){$("loginScreen").style.display="flex";setStatus("Signed out",false);return;}
+  $("loginScreen").style.display="none";setStatus("Connecting…");
+  unsubs.forEach(fn=>fn&&fn());unsubs=[];
+  unsubs.push(onValue(ref(dbase,"company"),snap=>{
+    company=snap.val()||{scholars:{},users:{},activity:{}};
+    if(!company.users)company.users={};if(!company.scholars)company.scholars={};if(!company.activity)company.activity={};
+    role=company.users[user.uid]?.role||"viewer";
+    $("adminBtn").style.display=["owner","boss"].includes(role)?"inline-block":"none";
+    document.querySelector('[data-p="admin"]').style.display=["owner","boss"].includes(role)?"inline-block":"none";
+    setStatus("Live • "+user.email,true);renderAll();
+  }));
+ });
+}
+start();
+</script>
+</body></html>

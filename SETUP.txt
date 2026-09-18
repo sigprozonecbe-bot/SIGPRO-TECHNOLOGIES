@@ -1,0 +1,38 @@
+SIGPRO TECHNOLOGIES - MULTI-USER SETUP
+
+WHAT THIS APP SUPPORTS
+- Multiple users with individual Firebase Email/Password logins
+- Roles: owner, boss, r&d, journal, patent, accounts, viewer
+- Shared real-time scholar/payment database
+- Research: 3 papers, 3 simulations, synopsis, thesis
+- Journal publication: Scopus, SCIE, Random Login Paper
+- Journal author positions: up to 7
+- Patent author positions: up to 8
+- Payment follow-up alerts and phone-call buttons
+- Editable records and activity history (who changed what)
+- PWA install on Android/desktop
+
+ONE-TIME FIREBASE SETUP
+1. Create a Firebase project.
+2. Register a Web App.
+3. Enable Authentication -> Email/Password.
+4. Create the required staff accounts.
+5. Create Realtime Database.
+6. Paste the Firebase Web config into index.html in the firebaseConfig block.
+7. Apply database.rules.json as your Realtime Database Rules.
+8. Create the first Owner/Boss profile in /company/users/<AUTH_UID> with {uid,name,email,role:"owner"} in the Firebase console.
+9. Host this folder with Firebase Hosting over HTTPS.
+10. Open the HTTPS URL on every phone/computer and install via Add to Home Screen / Install App.
+
+USER ROLES
+owner / boss = full access + user-role administration
+r&d = research work area
+journal = journal publication + journal author positions
+patent = patent author positions
+accounts = payment follow-up and collection updates
+viewer = read-only
+
+IMPORTANT
+- The rules supplied allow authenticated, role-assigned staff to write company data. They do not enforce field-level separation between service categories. The app UI does enforce role-specific areas. For a strict production security model, make category-specific database paths and rules.
+- Do not share one login between people. Create one Firebase account per staff member so activity history can identify who made an edit.
+- Firebase Hosting serves static assets over SSL and provides project web.app / firebaseapp.com subdomains.
