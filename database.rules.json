@@ -1,21 +1,22 @@
 {
   "rules": {
     "company": {
+      ".read": "auth != null && root.child('company/users').child(auth.uid).child('role').val() != null",
       "users": {
         "$uid": {
-          ".read": "auth != null && (auth.uid == $uid || root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss')",
-          ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss')"
+          ".read": "auth != null && (auth.uid == $uid || root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor')",
+          ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor')"
         }
       },
       "scholars": {
-        ".read": "auth != null && root.child('company/users').child(auth.uid).child('role').val() != null",
         "$id": {
+          ".read": "auth != null && root.child('company/users').child(auth.uid).child('role').val() != null",
           ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor' || root.child('company/users').child(auth.uid).child('role').val() == 'r&d' || root.child('company/users').child(auth.uid).child('role').val() == 'journal' || root.child('company/users').child(auth.uid).child('role').val() == 'patent' || root.child('company/users').child(auth.uid).child('role').val() == 'accounts')"
         }
       },
       "activity": {
-        ".read": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss')",
         "$id": {
+          ".read": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor')",
           ".write": "auth != null && (root.child('company/users').child(auth.uid).child('role').val() == 'owner' || root.child('company/users').child(auth.uid).child('role').val() == 'boss' || root.child('company/users').child(auth.uid).child('role').val() == 'editor' || root.child('company/users').child(auth.uid).child('role').val() == 'r&d' || root.child('company/users').child(auth.uid).child('role').val() == 'journal' || root.child('company/users').child(auth.uid).child('role').val() == 'patent' || root.child('company/users').child(auth.uid).child('role').val() == 'accounts')"
         }
       }
