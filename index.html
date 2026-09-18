@@ -119,7 +119,7 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:
   <section id="admin" class="page">
     <div class="grid2">
       <div class="card">
-        <h2>Users & Roles</h2><div class="sub">Manage access for your company users after they have a Firebase login.</div>
+        <h2>Users & Roles</h2><div class="sub">First create the person's login in Firebase Authentication → Users. Then paste that person's Firebase UID here and assign the SigPro role.</div>
         <div class="form">
           <div class="full"><label>User UID</label><input id="uUid" placeholder="Paste Firebase Authentication UID"></div>
           <div><label>Name</label><input id="uName"></div>
@@ -178,7 +178,13 @@ function currentUserName(){return company.users?.[user?.uid]?.name||user?.email|
 function setStatus(t,ok=true){$("status").textContent=(ok?"☁ ":"⚠ ")+t;$("status").className="status "+(ok?"ok":"bad");}
 window.login=async()=>{if(!CONFIGURED){$("loginMsg").textContent="Firebase setup is required in this file.";return;}const e=$("email").value.trim(),p=$("password").value;if(!e||!p){$("loginMsg").textContent="Enter email and password.";return;}try{await signInWithEmailAndPassword(auth,e,p);$("loginMsg").textContent="";}catch(x){$("loginMsg").textContent=x.message.replace("Firebase: ","");}};
 window.logout=async()=>{if(auth)await signOut(auth);};
-window.showPage=(id)=>{if(id==="admin"&&!["owner","boss"].includes(role))return;document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.p===id));if(id==="scholars")renderScholars();if(id==="admin")renderAdmin();};
+window.showPage=(id)=>{
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  $(id).classList.add("active");
+  document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.p===id));
+  if(id==="scholars")renderScholars();
+  if(id==="admin")renderAdmin();
+};
 
 function showModal(html,small=false){$("modal").className="modal"+(small?" modal-sm":"");$("modal").innerHTML=html;$("modalBg").style.display="flex";}
 window.closeModal=()=>{$("modalBg").style.display="none";};
@@ -369,13 +375,32 @@ window.tabx=(x,btn)=>{["r","j","ja","pa","o","p"].forEach(k=>$("sx"+k).classList
 window.openAlerts=()=>{const p=[];scholars().forEach(s=>totals(s).ms.filter(m=>norm(m.status)!=="paid").forEach(m=>p.push({...m,scholar:s})));p.sort((a,b)=>(a.due||"9999").localeCompare(b.due||"9999"));showModal(`<div class="service-head"><div><h2>🔔 Payment Follow-up Alerts</h2><div class="sub">Shared with all authorized company users.</div></div><button class="btn secondary" onclick="closeModal()">Close</button></div>${p.length?p.map(alertHTML).join(""):'<div class="empty">No pending payments.</div>'}`);};
 
 function renderAdmin(){
- if(!["owner","boss"].includes(role))return;
- const users=Object.values(company.users||{});$("userList").innerHTML=users.length?users.map(u=>`<div class="service"><div class="service-head"><div><b>${esc(u.name||"-")}</b><div class="meta">${esc(u.email||"-")} • UID ${esc(u.uid||"-")}</div></div><span class="badge role">${esc(u.role||"viewer")}</span></div></div>`).join(""):'<div class="empty">No user profiles saved.</div>';
- const acts=Object.values(company.activity||{}).sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,100);$("activityBody").innerHTML=acts.length?acts.map(a=>`<tr><td>${new Date(a.time||0).toLocaleString()}</td><td>${esc(a.user||"")}</td><td>${esc(a.action||"")}</td><td>${esc(a.record||"")}</td><td>${esc(a.details||"")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No activity yet.</td></tr>';
+  const fullAccess=["owner","boss"].includes(role);
+  const mine=company.users?.[user?.uid];
+  const currentInfo=`<div class="note"><b>Current login:</b> ${esc(user?.email||"-")}<br><b>Firebase UID:</b> ${esc(user?.uid||"-")}<br><b>SigPro role:</b> <span class="badge ${fullAccess?"paid":"role"}">${esc(role||"viewer")}</span>${mine?"":"<br><span style=\"color:#b42318\"><b>No role record found for this UID in company/users.</b></span>"}</div>`;
+  const editor=$("uUid")?.closest(".card");
+  if(editor){
+    editor.style.opacity=fullAccess?"1":".75";
+    const controls=editor.querySelectorAll("input,select,button");
+    controls.forEach(c=>{ if(c.id!=="uUid" && c.id!=="uName" && c.id!=="uEmail" && c.id!=="uRole") c.disabled=!fullAccess; });
+  }
+  $("userList").innerHTML=currentInfo+(Object.values(company.users||{}).length?Object.values(company.users||{}).map(u=>`<div class="service"><div class="service-head"><div><b>${esc(u.name||"-")}</b><div class="meta">${esc(u.email||"-")} • UID ${esc(u.uid||"-")}</div></div><span class="badge role">${esc(u.role||"viewer")}</span></div></div>`).join(""):'<div class="empty">No user role records are stored yet.</div>');
+  const acts=Object.values(company.activity||{}).sort((a,b)=>(b.time||0)-(a.time||0)).slice(0,100);
+  $("activityBody").innerHTML=acts.length?acts.map(a=>`<tr><td>${new Date(a.time||0).toLocaleString()}</td><td>${esc(a.user||"")}</td><td>${esc(a.action||"")}</td><td>${esc(a.record||"")}</td><td>${esc(a.details||"")}</td></tr>`).join(""):'<tr><td colspan="5" class="empty">No activity yet.</td></tr>';
 }
 window.saveUserRole=async()=>{
- if(!["owner","boss"].includes(role))return;const uidv=$("uUid").value.trim(),name=$("uName").value.trim(),email=$("uEmail").value.trim(),rv=$("uRole").value;if(!uidv){alert("Paste the Firebase Authentication UID.");return;}
- const u={uid:uidv,name,email,role:rv,updatedAt:Date.now()};await write("company/users/"+uidv,u,"USER_ROLE",email||uidv,"Set role to "+rv);$("uUid").value=$("uName").value=$("uEmail").value="";alert("User role saved. When that user logs in, the role will be applied.");};
+  if(!["owner","boss"].includes(role)){alert("Only Owner or Boss can change user roles. Your current role is: "+(role||"viewer"));return;}
+  const uidv=$("uUid").value.trim(),name=$("uName").value.trim(),email=$("uEmail").value.trim(),rv=$("uRole").value;
+  if(!uidv){alert("Paste the Firebase Authentication UID.");return;}
+  try{
+    const u={uid:uidv,name,email,role:rv,updatedAt:Date.now()};
+    await write("company/users/"+uidv,u,"USER_ROLE",email||uidv,"Set role to "+rv);
+    $("uUid").value=$("uName").value=$("uEmail").value="";
+    alert("User role saved successfully. That person must also exist under Firebase Authentication → Users.");
+  }catch(err){
+    alert("Could not save the role. Firebase said: "+(err?.message||err));
+  }
+};
 
 async function start(){
  if(!CONFIGURED){setStatus("Setup required",false);$("loginScreen").style.display="flex";return;}
