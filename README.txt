@@ -1,4 +1,4 @@
-SigPro Technologies – Final All-Work Fixed Version
+SigPro Technologies – Final Business Date-Persistence Version
 
 This version is for the shared Firebase/GitHub Pages SigPro app.
 
@@ -19,3 +19,7 @@ Fixed:
 - Owner, Boss and Editor keep full access.
 
 GitHub Pages update: replace index.html and sw.js (and keep the manifest/icons). Then hard-refresh the site (Ctrl+F5 on computer) or close/reopen the installed PWA on mobile. Firebase rules/database do not need to be changed for these fixes.
+
+
+IMPORTANT DATE FIX v12:
+The date functions are explicitly exposed to the page controls so Journal, R&D, Journal Author, Patent and Other date fields actually save to Firebase. Each date field also has an explicit Save Date button. Closing the Scholar window waits for pending date saves.
